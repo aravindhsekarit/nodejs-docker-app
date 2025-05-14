@@ -1,0 +1,27 @@
+pipeline {
+  agent any
+  stages {
+    stage('Clone') {
+      steps {
+        git 'https://github.com/yourusername/nodejs-docker-app.git'
+      }
+    }
+    stage('Build Docker Image') {
+      steps {
+        script {
+          docker.build("nodejs-app:latest")
+        }
+      }
+    }
+    stage('Push to Docker Host') {
+      steps {
+        sh 'scp -o StrictHostKeyChecking=no Dockerfile app.js root@<DOCKER_VM_IP>:/tmp/'
+      }
+    }
+    stage('Deploy with Ansible') {
+      steps {
+        sh 'ansible-playbook -i inventory deploy.yml'
+      }
+    }
+  }
+}
